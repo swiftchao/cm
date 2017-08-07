@@ -1,0 +1,989 @@
+-- MySQL dump 10.13  Distrib 5.1.66, for redhat-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: cm
+-- ------------------------------------------------------
+-- Server version	5.1.66
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `AUDITS`
+--
+
+DROP TABLE IF EXISTS `AUDITS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `AUDITS` (
+  `AUDIT_ID` bigint(20) NOT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `ROLE_ID` bigint(20) DEFAULT NULL,
+  `CREATED_INSTANT` bigint(20) DEFAULT NULL,
+  `MESSAGE` longtext COLLATE utf8_unicode_ci,
+  `ACTING_USER_ID` bigint(20) DEFAULT NULL,
+  `COMMAND_ID` bigint(20) DEFAULT NULL,
+  `USER_ID` bigint(20) DEFAULT NULL,
+  `HOST_ID` bigint(20) DEFAULT NULL,
+  `AUDIT_TYPE` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'UNKNOWN',
+  `CONFIG_CONTAINER_ID` bigint(20) DEFAULT NULL,
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `HOST_TEMPLATE_ID` bigint(20) DEFAULT NULL,
+  `IP_ADDRESS` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ALLOWED` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`AUDIT_ID`),
+  KEY `IDX_AUDIT_CREATED_INSTANT` (`CREATED_INSTANT`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLIENT_CONFIGS`
+--
+
+DROP TABLE IF EXISTS `CLIENT_CONFIGS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLIENT_CONFIGS` (
+  `CLIENT_CONFIG_ID` bigint(20) NOT NULL,
+  `CREATED_INSTANT` bigint(20) NOT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `CONFIG_ARCHIVE` mediumblob NOT NULL,
+  `MIME_TYPE` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `FILENAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `CONFIG_STALENESS_STATUS` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `METADATA` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `GATEWAY_ID` bigint(20) DEFAULT NULL,
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `GENERATION` bigint(20) NOT NULL,
+  PRIMARY KEY (`CLIENT_CONFIG_ID`),
+  KEY `FK_CLIENT_CONFIG_SERVICE` (`SERVICE_ID`),
+  KEY `IDX_CLIENT_CONFIG_GATEWAY` (`GATEWAY_ID`),
+  KEY `IDX_CLIENT_CONFIG_CLUSTER` (`CLUSTER_ID`),
+  CONSTRAINT `FK_CLIENT_CONFIG_CLUSTER` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_CLIENT_CONFIG_GATEWAY` FOREIGN KEY (`GATEWAY_ID`) REFERENCES `ROLES` (`ROLE_ID`),
+  CONSTRAINT `FK_CLIENT_CONFIG_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLIENT_CONFIGS_TO_HOSTS`
+--
+
+DROP TABLE IF EXISTS `CLIENT_CONFIGS_TO_HOSTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLIENT_CONFIGS_TO_HOSTS` (
+  `CLIENT_CONFIG_ID` bigint(20) NOT NULL,
+  `HOST_ID` bigint(20) NOT NULL,
+  KEY `IDX_CLIENT_CFG2HOST_CLIENT_CFG` (`CLIENT_CONFIG_ID`),
+  KEY `IDX_CLIENT_CFG2HOST_HOST` (`HOST_ID`),
+  CONSTRAINT `FK_CLIENT_CFG2HOST_CLIENT_CFG` FOREIGN KEY (`CLIENT_CONFIG_ID`) REFERENCES `CLIENT_CONFIGS` (`CLIENT_CONFIG_ID`),
+  CONSTRAINT `FK_CLIENT_CFG2HOST_HOST` FOREIGN KEY (`HOST_ID`) REFERENCES `HOSTS` (`HOST_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLUSTERS`
+--
+
+DROP TABLE IF EXISTS `CLUSTERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLUSTERS` (
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `MAINTENANCE_COUNT` int(11) NOT NULL DEFAULT '0',
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `CDH_VERSION` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `DISPLAY_NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`CLUSTER_ID`),
+  UNIQUE KEY `NAME` (`NAME`),
+  UNIQUE KEY `DISPLAY_NAME` (`DISPLAY_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLUSTERS_AUD`
+--
+
+DROP TABLE IF EXISTS `CLUSTERS_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLUSTERS_AUD` (
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `CDH_VERSION` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `DISPLAY_NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`CLUSTER_ID`,`REV`),
+  KEY `FK_CLUSTER_REVISION_START` (`REV`),
+  CONSTRAINT `FK_CLUSTER_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLUSTER_ACTIVATED_RELEASES`
+--
+
+DROP TABLE IF EXISTS `CLUSTER_ACTIVATED_RELEASES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLUSTER_ACTIVATED_RELEASES` (
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  `RELEASE_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`CLUSTER_ID`,`RELEASE_ID`),
+  KEY `IDX_CLSTR_ACTV_RLS_CLSTR` (`CLUSTER_ID`),
+  KEY `IDX_CLSTR_ACTV_RLS_RLS` (`RELEASE_ID`),
+  CONSTRAINT `FK_CLSTR_ACTV_RLS_CLSTR` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_CLSTR_ACTV_RLS_RLS` FOREIGN KEY (`RELEASE_ID`) REFERENCES `RELEASES` (`RELEASE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLUSTER_ACTIVATED_RELEASES_AUD`
+--
+
+DROP TABLE IF EXISTS `CLUSTER_ACTIVATED_RELEASES_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLUSTER_ACTIVATED_RELEASES_AUD` (
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  `RELEASE_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  PRIMARY KEY (`REV`,`CLUSTER_ID`,`RELEASE_ID`),
+  KEY `FK_CLUSTER_ACTIVATED_RELEASES_REVISION_START` (`REV`),
+  CONSTRAINT `FK_CLUSTER_ACTIVATED_RELEASES_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLUSTER_MANAGED_RELEASES`
+--
+
+DROP TABLE IF EXISTS `CLUSTER_MANAGED_RELEASES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLUSTER_MANAGED_RELEASES` (
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  `RELEASE_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`CLUSTER_ID`,`RELEASE_ID`),
+  KEY `IDX_CLSTR_MNGD_RLS_CLSTR` (`CLUSTER_ID`),
+  KEY `IDX_CLSTR_MNGD_RLS_RLS` (`RELEASE_ID`),
+  CONSTRAINT `FK_CLSTR_MNGD_RLS_CLSTR` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_CLSTR_MNGD_RLS_RLS` FOREIGN KEY (`RELEASE_ID`) REFERENCES `RELEASES` (`RELEASE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CLUSTER_UNDISTRIBUTED_RELEASES`
+--
+
+DROP TABLE IF EXISTS `CLUSTER_UNDISTRIBUTED_RELEASES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CLUSTER_UNDISTRIBUTED_RELEASES` (
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  `RELEASE_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`CLUSTER_ID`,`RELEASE_ID`),
+  KEY `IDX_CLSTR_UNDIST_RLS_CLSTR` (`CLUSTER_ID`),
+  KEY `IDX_CLSTR_UNDIST_RLS_RLS` (`RELEASE_ID`),
+  CONSTRAINT `FK_CLSTR_UNDIST_RLS_CLSTR` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_CLSTR_UNDIST_RLS_RLS` FOREIGN KEY (`RELEASE_ID`) REFERENCES `RELEASES` (`RELEASE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CM_PEERS`
+--
+
+DROP TABLE IF EXISTS `CM_PEERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CM_PEERS` (
+  `PEER_ID` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `URL` varchar(256) COLLATE utf8_unicode_ci NOT NULL,
+  `USERNAME` varchar(256) COLLATE utf8_unicode_ci NOT NULL,
+  `PASSWORD` varchar(256) COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `PEER_TYPE` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `CREATED_REMOTE_USER` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`PEER_ID`),
+  UNIQUE KEY `IDX_UNIQUE_CM_PEERS` (`NAME`,`PEER_TYPE`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CM_VERSION`
+--
+
+DROP TABLE IF EXISTS `CM_VERSION`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CM_VERSION` (
+  `VERSION` varchar(256) COLLATE utf8_unicode_ci NOT NULL,
+  `GUID` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+  `LAST_UPDATE_INSTANT` bigint(20) DEFAULT NULL,
+  `TS` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `COMMANDS`
+--
+
+DROP TABLE IF EXISTS `COMMANDS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `COMMANDS` (
+  `COMMAND_ID` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `STATE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `START_INSTANT` bigint(20) DEFAULT NULL,
+  `END_INSTANT` bigint(20) DEFAULT NULL,
+  `ACTIVE` int(11) DEFAULT NULL,
+  `RESULT_MESSAGE` longtext COLLATE utf8_unicode_ci,
+  `RESULT_DATA` mediumblob,
+  `RESULT_DATA_MIME_TYPE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `RESULT_DATA_FILENAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `SUCCESS` bit(1) DEFAULT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `ROLE_ID` bigint(20) DEFAULT NULL,
+  `PARENT_ID` bigint(20) DEFAULT NULL,
+  `INTERNAL_STATE` mediumblob,
+  `HOST_ID` bigint(20) DEFAULT NULL,
+  `RESULT_DATA_PATH` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `RESULT_DATA_REAPED` bit(1) DEFAULT b'0',
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `SCHEDULE_ID` bigint(20) DEFAULT NULL,
+  `ARGUMENTS` longtext COLLATE utf8_unicode_ci,
+  `AUDITED` bit(1) NOT NULL DEFAULT b'0',
+  `FIRST_UPDATED_INSTANT` bigint(20) DEFAULT NULL,
+  `CREATION_INSTANT` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`COMMAND_ID`),
+  KEY `FK_COMMAND_ROLE` (`ROLE_ID`),
+  KEY `FK_COMMAND_PARENT` (`PARENT_ID`),
+  KEY `FK_COMMAND_SERVICE` (`SERVICE_ID`),
+  KEY `FK_COMMAND_HOST` (`HOST_ID`),
+  KEY `IDX_COMMAND_ACTIVE` (`ACTIVE`),
+  KEY `FK_COMMAND_CLUSTER` (`CLUSTER_ID`),
+  KEY `IDX_COMMAND_SCHEDULE` (`SCHEDULE_ID`),
+  KEY `IDX_START_INSTANT` (`START_INSTANT`),
+  KEY `IDX_COMMAND_STATE` (`STATE`),
+  CONSTRAINT `FK_COMMAND_CLUSTER` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_COMMAND_HOST` FOREIGN KEY (`HOST_ID`) REFERENCES `HOSTS` (`HOST_ID`),
+  CONSTRAINT `FK_COMMAND_PARENT` FOREIGN KEY (`PARENT_ID`) REFERENCES `COMMANDS` (`COMMAND_ID`),
+  CONSTRAINT `FK_COMMAND_ROLE` FOREIGN KEY (`ROLE_ID`) REFERENCES `ROLES` (`ROLE_ID`),
+  CONSTRAINT `FK_COMMAND_SCHEDULE` FOREIGN KEY (`SCHEDULE_ID`) REFERENCES `COMMAND_SCHEDULES` (`SPEC_ID`),
+  CONSTRAINT `FK_COMMAND_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `COMMAND_SCHEDULES`
+--
+
+DROP TABLE IF EXISTS `COMMAND_SCHEDULES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `COMMAND_SCHEDULES` (
+  `SPEC_ID` bigint(20) NOT NULL,
+  `COMMAND_NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `COMMAND_ARGUMENTS` longtext COLLATE utf8_unicode_ci,
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `ROLE_ID` bigint(20) DEFAULT NULL,
+  `HOST_ID` bigint(20) DEFAULT NULL,
+  `START_TIME` bigint(20) NOT NULL,
+  `END_TIME` bigint(20) DEFAULT NULL,
+  `REPEAT_INTERVAL` bigint(20) NOT NULL,
+  `REPEAT_INTERVAL_UNIT` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `PAUSED` bit(1) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `VERSION` bigint(20) NOT NULL,
+  `FIRE_AFTER_TIME` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`SPEC_ID`),
+  KEY `FK_COMMAND_SCHEDULE_CLUSTER` (`CLUSTER_ID`),
+  KEY `FK_COMMAND_SCHEDULE_SERVICE` (`SERVICE_ID`),
+  KEY `FK_COMMAND_SCHEDULE_ROLE` (`ROLE_ID`),
+  KEY `FK_COMMAND_SCHEDULE_HOST` (`HOST_ID`),
+  CONSTRAINT `FK_COMMAND_SCHEDULE_CLUSTER` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_COMMAND_SCHEDULE_HOST` FOREIGN KEY (`HOST_ID`) REFERENCES `HOSTS` (`HOST_ID`),
+  CONSTRAINT `FK_COMMAND_SCHEDULE_ROLE` FOREIGN KEY (`ROLE_ID`) REFERENCES `ROLES` (`ROLE_ID`),
+  CONSTRAINT `FK_COMMAND_SCHEDULE_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CONFIGS`
+--
+
+DROP TABLE IF EXISTS `CONFIGS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CONFIGS` (
+  `CONFIG_ID` bigint(20) NOT NULL,
+  `ROLE_ID` bigint(20) DEFAULT NULL,
+  `ATTR` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `VALUE` longtext COLLATE utf8_unicode_ci,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `HOST_ID` bigint(20) DEFAULT NULL,
+  `CONFIG_CONTAINER_ID` bigint(20) DEFAULT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `ROLE_CONFIG_GROUP_ID` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`CONFIG_ID`),
+  KEY `FK_CONFIG_ROLE` (`ROLE_ID`),
+  KEY `FK_CONFIG_SERVICE` (`SERVICE_ID`),
+  KEY `IDX_CONFIG_HOST` (`HOST_ID`),
+  KEY `IDX_CONFIG_CONFIG_CONTAINER` (`CONFIG_CONTAINER_ID`),
+  KEY `IDX_CONFIG_ROLE_CONFIG_GROUP` (`ROLE_CONFIG_GROUP_ID`),
+  CONSTRAINT `FK_CONFIG_CONFIG_CONTAINER` FOREIGN KEY (`CONFIG_CONTAINER_ID`) REFERENCES `CONFIG_CONTAINERS` (`CONFIG_CONTAINER_ID`),
+  CONSTRAINT `FK_CONFIG_HOST` FOREIGN KEY (`HOST_ID`) REFERENCES `HOSTS` (`HOST_ID`),
+  CONSTRAINT `FK_CONFIG_ROLE` FOREIGN KEY (`ROLE_ID`) REFERENCES `ROLES` (`ROLE_ID`),
+  CONSTRAINT `FK_CONFIG_ROLE_CONFIG_GROUP` FOREIGN KEY (`ROLE_CONFIG_GROUP_ID`) REFERENCES `ROLE_CONFIG_GROUPS` (`ROLE_CONFIG_GROUP_ID`),
+  CONSTRAINT `FK_CONFIG_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CONFIGS_AUD`
+--
+
+DROP TABLE IF EXISTS `CONFIGS_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CONFIGS_AUD` (
+  `CONFIG_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `ATTR` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `VALUE` longtext COLLATE utf8_unicode_ci,
+  `ROLE_ID` bigint(20) DEFAULT NULL,
+  `ROLE_CONFIG_GROUP_ID` bigint(20) DEFAULT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `HOST_ID` bigint(20) DEFAULT NULL,
+  `CONFIG_CONTAINER_ID` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`CONFIG_ID`,`REV`),
+  KEY `FK_CONFIG_REVISION_START` (`REV`),
+  CONSTRAINT `FK_CONFIG_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CONFIG_CONTAINERS`
+--
+
+DROP TABLE IF EXISTS `CONFIG_CONTAINERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CONFIG_CONTAINERS` (
+  `CONFIG_CONTAINER_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `CONFIG_TYPE` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `CONFIG_GENERATION` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`CONFIG_CONTAINER_ID`),
+  UNIQUE KEY `CONFIG_TYPE` (`CONFIG_TYPE`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CREDENTIALS`
+--
+
+DROP TABLE IF EXISTS `CREDENTIALS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CREDENTIALS` (
+  `CREDENTIAL_ID` bigint(20) NOT NULL,
+  `PRINCIPAL` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `KEYTAB` mediumblob NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`CREDENTIAL_ID`),
+  UNIQUE KEY `PRINCIPAL` (`PRINCIPAL`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `GLOBAL_SETTINGS`
+--
+
+DROP TABLE IF EXISTS `GLOBAL_SETTINGS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `GLOBAL_SETTINGS` (
+  `GLOBAL_SETTING_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `ATTR` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `VALUE` longtext COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`GLOBAL_SETTING_ID`),
+  UNIQUE KEY `IDX_UNIQUE_GLOBAL_SETTING` (`ATTR`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `HOSTS`
+--
+
+DROP TABLE IF EXISTS `HOSTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `HOSTS` (
+  `HOST_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `HOST_IDENTIFIER` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `IP_ADDRESS` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `RACK_ID` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `STATUS` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `CONFIG_CONTAINER_ID` bigint(20) DEFAULT NULL,
+  `MAINTENANCE_COUNT` int(11) NOT NULL DEFAULT '0',
+  `DECOMMISSION_COUNT` int(11) NOT NULL DEFAULT '0',
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `NUM_CORES` bigint(20) DEFAULT NULL,
+  `TOTAL_PHYS_MEM_BYTES` bigint(20) DEFAULT NULL,
+  `PUBLIC_NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PUBLIC_IP_ADDRESS` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `CLOUD_PROVIDER` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`HOST_ID`),
+  UNIQUE KEY `HOST_IDENTIFIER` (`HOST_IDENTIFIER`),
+  KEY `IDX_HOST_CONFIG_CONTAINER` (`CONFIG_CONTAINER_ID`),
+  KEY `IDX_HOST_CLUSTER` (`CLUSTER_ID`),
+  CONSTRAINT `FK_HOST_CLUSTER` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`),
+  CONSTRAINT `FK_HOST_CONFIG_CONTAINER` FOREIGN KEY (`CONFIG_CONTAINER_ID`) REFERENCES `CONFIG_CONTAINERS` (`CONFIG_CONTAINER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `HOSTS_AUD`
+--
+
+DROP TABLE IF EXISTS `HOSTS_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `HOSTS_AUD` (
+  `HOST_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `HOST_IDENTIFIER` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `CONFIG_CONTAINER_ID` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`HOST_ID`,`REV`),
+  KEY `FK_HOST_REVISION_START` (`REV`),
+  CONSTRAINT `FK_HOST_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `HOST_TEMPLATES`
+--
+
+DROP TABLE IF EXISTS `HOST_TEMPLATES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `HOST_TEMPLATES` (
+  `HOST_TEMPLATE_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `CLUSTER_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`HOST_TEMPLATE_ID`),
+  UNIQUE KEY `NAME` (`NAME`),
+  KEY `IDX_HOST_TEMPLATE_CLUSTER` (`CLUSTER_ID`),
+  CONSTRAINT `FK_HOST_TEMPLATE_CLUSTER` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `HOST_TEMPLATE_TO_ROLE_CONF_GRP`
+--
+
+DROP TABLE IF EXISTS `HOST_TEMPLATE_TO_ROLE_CONF_GRP`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `HOST_TEMPLATE_TO_ROLE_CONF_GRP` (
+  `HOST_TEMPLATE_ID` bigint(20) NOT NULL,
+  `ROLE_CONFIG_GROUP_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`HOST_TEMPLATE_ID`,`ROLE_CONFIG_GROUP_ID`),
+  KEY `IDX_HOST_TEMPL_TO_RCG_HOST_TMP` (`HOST_TEMPLATE_ID`),
+  KEY `IDX_HOST_TEMPL_TO_RCG_RCG` (`ROLE_CONFIG_GROUP_ID`),
+  CONSTRAINT `FK_HOST_TEMPL_TO_RCG_HOST_TEMP` FOREIGN KEY (`HOST_TEMPLATE_ID`) REFERENCES `HOST_TEMPLATES` (`HOST_TEMPLATE_ID`),
+  CONSTRAINT `FK_HOST_TEMPL_TO_RCG_RCG` FOREIGN KEY (`ROLE_CONFIG_GROUP_ID`) REFERENCES `ROLE_CONFIG_GROUPS` (`ROLE_CONFIG_GROUP_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `METRICS`
+--
+
+DROP TABLE IF EXISTS `METRICS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `METRICS` (
+  `METRIC_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `METRIC_IDENTIFIER` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `METRIC` longtext COLLATE utf8_unicode_ci,
+  PRIMARY KEY (`METRIC_ID`),
+  UNIQUE KEY `METRIC_IDENTIFIER` (`METRIC_IDENTIFIER`),
+  UNIQUE KEY `NAME` (`NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARCELS`
+--
+
+DROP TABLE IF EXISTS `PARCELS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PARCELS` (
+  `PARCEL_ID` bigint(20) NOT NULL,
+  `PRODUCT` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `VERSION` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `OS` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `FILENAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `HASH` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `BINARY_DIFF` bit(1) DEFAULT NULL,
+  `STATUS` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `SOURCE` varchar(4000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `RELEASE_INSTANT` bigint(20) DEFAULT NULL,
+  `DOWNLOAD_INSTANT` bigint(20) DEFAULT NULL,
+  `RELEASE_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`PARCEL_ID`),
+  UNIQUE KEY `FILENAME` (`FILENAME`),
+  KEY `IDX_PARCEL_RELEASE` (`RELEASE_ID`),
+  CONSTRAINT `FK_PARCEL_RELEASE` FOREIGN KEY (`RELEASE_ID`) REFERENCES `RELEASES` (`RELEASE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARCEL_COMPONENTS`
+--
+
+DROP TABLE IF EXISTS `PARCEL_COMPONENTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PARCEL_COMPONENTS` (
+  `PARCEL_ID` bigint(20) NOT NULL,
+  `VERSION` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `COMPONENT_NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`PARCEL_ID`,`COMPONENT_NAME`),
+  KEY `IDX_COMPONENT_PARCEL` (`PARCEL_ID`),
+  CONSTRAINT `FK_COMPONENT_PARCEL` FOREIGN KEY (`PARCEL_ID`) REFERENCES `PARCELS` (`PARCEL_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PROCESSES`
+--
+
+DROP TABLE IF EXISTS `PROCESSES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PROCESSES` (
+  `PROCESS_ID` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `ROLE_ID` bigint(20) DEFAULT NULL,
+  `COMMAND_ID` bigint(20) DEFAULT NULL,
+  `HOST_ID` bigint(20) NOT NULL,
+  `PROCESS_USER` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PROCESS_GROUP` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `PROGRAM` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ARGUMENTS` longtext COLLATE utf8_unicode_ci,
+  `RUNNING` bit(1) DEFAULT NULL,
+  `RUN_GENERATION` bigint(20) DEFAULT NULL,
+  `ONE_OFF` bit(1) DEFAULT NULL,
+  `CONFIGURATION_DATA` mediumblob,
+  `STATUS_LINKS` longtext COLLATE utf8_unicode_ci,
+  `RESOURCES` longtext COLLATE utf8_unicode_ci,
+  `ENVIRONMENT` longtext COLLATE utf8_unicode_ci,
+  `REFRESH_FILES` longtext COLLATE utf8_unicode_ci,
+  `CREATED_INSTANT` bigint(20) NOT NULL DEFAULT '0',
+  `SPECIAL_FILE_INFO` longtext COLLATE utf8_unicode_ci,
+  `AUTO_RESTART` bit(1) NOT NULL DEFAULT b'1',
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `UPDATED_INSTANT` bigint(20) NOT NULL,
+  `REQUIRED_PARCEL_TAGS` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIONAL_PARCEL_TAGS` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `CONFIG_GENERATION` bigint(20) NOT NULL,
+  PRIMARY KEY (`PROCESS_ID`),
+  KEY `FK_PROCESS_HOST` (`HOST_ID`),
+  KEY `FK_PROCESS_ROLE` (`ROLE_ID`),
+  KEY `FK_PROCESS_COMMAND` (`COMMAND_ID`),
+  CONSTRAINT `FK_PROCESS_COMMAND` FOREIGN KEY (`COMMAND_ID`) REFERENCES `COMMANDS` (`COMMAND_ID`),
+  CONSTRAINT `FK_PROCESS_HOST` FOREIGN KEY (`HOST_ID`) REFERENCES `HOSTS` (`HOST_ID`),
+  CONSTRAINT `FK_PROCESS_ROLE` FOREIGN KEY (`ROLE_ID`) REFERENCES `ROLES` (`ROLE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PROCESS_ACTIVE_RELEASES`
+--
+
+DROP TABLE IF EXISTS `PROCESS_ACTIVE_RELEASES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PROCESS_ACTIVE_RELEASES` (
+  `PROCESS_ID` bigint(20) NOT NULL,
+  `RELEASE_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`PROCESS_ID`,`RELEASE_ID`),
+  KEY `IDX_PROC_ACTV_RLS_PROC` (`PROCESS_ID`),
+  KEY `IDX_PROC_ACTV_RLS_RLS` (`RELEASE_ID`),
+  CONSTRAINT `FK_PROC_ACTV_RLS_PROC` FOREIGN KEY (`PROCESS_ID`) REFERENCES `PROCESSES` (`PROCESS_ID`),
+  CONSTRAINT `FK_PROC_ACTV_RLS_RLS` FOREIGN KEY (`RELEASE_ID`) REFERENCES `RELEASES` (`RELEASE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `RELEASES`
+--
+
+DROP TABLE IF EXISTS `RELEASES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `RELEASES` (
+  `RELEASE_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `PRODUCT` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `VERSION` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `RELEASE_NOTES` longtext COLLATE utf8_unicode_ci,
+  `DEPENDS` longtext COLLATE utf8_unicode_ci,
+  `CONFLICTS` longtext COLLATE utf8_unicode_ci,
+  `REPLACES` longtext COLLATE utf8_unicode_ci,
+  `SERVICES_RESTART_INFO` mediumblob,
+  PRIMARY KEY (`RELEASE_ID`),
+  UNIQUE KEY `IDX_UNIQUE_RELEASE` (`PRODUCT`,`VERSION`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `RELEASES_AUD`
+--
+
+DROP TABLE IF EXISTS `RELEASES_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `RELEASES_AUD` (
+  `RELEASE_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `PRODUCT` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `VERSION` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`RELEASE_ID`,`REV`),
+  KEY `FK_RELEASE_REVISION_START` (`REV`),
+  CONSTRAINT `FK_RELEASE_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `REVISIONS`
+--
+
+DROP TABLE IF EXISTS `REVISIONS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `REVISIONS` (
+  `REVISION_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `USER_ID` bigint(20) DEFAULT NULL,
+  `TIMESTAMP` bigint(20) DEFAULT NULL,
+  `MESSAGE` longtext COLLATE utf8_unicode_ci,
+  PRIMARY KEY (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ROLES`
+--
+
+DROP TABLE IF EXISTS `ROLES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ROLES` (
+  `ROLE_ID` bigint(20) NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `HOST_ID` bigint(20) NOT NULL,
+  `ROLE_TYPE` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `CONFIGURED_STATUS` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `MERGED_KEYTAB` mediumblob,
+  `MAINTENANCE_COUNT` int(11) NOT NULL DEFAULT '0',
+  `DECOMMISSION_COUNT` int(11) NOT NULL DEFAULT '0',
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `ROLE_CONFIG_GROUP_ID` bigint(20) NOT NULL,
+  `HAS_EVER_STARTED` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ROLE_ID`),
+  UNIQUE KEY `NAME` (`NAME`),
+  KEY `FK_ROLE_HOST` (`HOST_ID`),
+  KEY `FK_ROLE_SERVICE` (`SERVICE_ID`),
+  KEY `FK_ROLE_ROLE_CONFIG_GROUP` (`ROLE_CONFIG_GROUP_ID`),
+  CONSTRAINT `FK_ROLE_HOST` FOREIGN KEY (`HOST_ID`) REFERENCES `HOSTS` (`HOST_ID`),
+  CONSTRAINT `FK_ROLE_ROLE_CONFIG_GROUP` FOREIGN KEY (`ROLE_CONFIG_GROUP_ID`) REFERENCES `ROLE_CONFIG_GROUPS` (`ROLE_CONFIG_GROUP_ID`),
+  CONSTRAINT `FK_ROLE_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ROLES_AUD`
+--
+
+DROP TABLE IF EXISTS `ROLES_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ROLES_AUD` (
+  `ROLE_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ROLE_TYPE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `HOST_ID` bigint(20) DEFAULT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  `ROLE_CONFIG_GROUP_ID` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ROLE_ID`,`REV`),
+  KEY `FK_ROLE_REVISION_START` (`REV`),
+  CONSTRAINT `FK_ROLE_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ROLE_CONFIG_GROUPS`
+--
+
+DROP TABLE IF EXISTS `ROLE_CONFIG_GROUPS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ROLE_CONFIG_GROUPS` (
+  `ROLE_CONFIG_GROUP_ID` bigint(20) NOT NULL,
+  `ROLE_TYPE` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `BASE` bit(1) NOT NULL DEFAULT b'0',
+  `DISPLAY_NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `SERVICE_ID` bigint(20) NOT NULL,
+  PRIMARY KEY (`ROLE_CONFIG_GROUP_ID`),
+  UNIQUE KEY `IDX_UNIQUE_ROLE_CONFIG_GROUP` (`NAME`),
+  UNIQUE KEY `IDX_UNIQUE_RCG_DISP` (`DISPLAY_NAME`,`SERVICE_ID`),
+  KEY `FK_ROLE_CONFIG_GROUP_SERVICE` (`SERVICE_ID`),
+  CONSTRAINT `FK_ROLE_CONFIG_GROUP_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ROLE_CONFIG_GROUPS_AUD`
+--
+
+DROP TABLE IF EXISTS `ROLE_CONFIG_GROUPS_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ROLE_CONFIG_GROUPS_AUD` (
+  `ROLE_CONFIG_GROUP_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `ROLE_TYPE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `DISPLAY_NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `BASE` tinyint(1) DEFAULT NULL,
+  `SERVICE_ID` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`ROLE_CONFIG_GROUP_ID`,`REV`),
+  KEY `FK_RCG_REVISION_START` (`REV`),
+  CONSTRAINT `FK_RCG_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ROLE_STALENESS_STATUS`
+--
+
+DROP TABLE IF EXISTS `ROLE_STALENESS_STATUS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ROLE_STALENESS_STATUS` (
+  `ROLE_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `STATUS` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  KEY `IDX_ROLE_STALENESS_STATUS_ID` (`ROLE_ID`),
+  CONSTRAINT `FK_ROLE_STALENESS_STATUS_ROLE` FOREIGN KEY (`ROLE_ID`) REFERENCES `ROLES` (`ROLE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SCHEMA_VERSION`
+--
+
+DROP TABLE IF EXISTS `SCHEMA_VERSION`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SCHEMA_VERSION` (
+  `VERSION` int(11) NOT NULL,
+  `OLD_VERSION` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SERVICES`
+--
+
+DROP TABLE IF EXISTS `SERVICES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SERVICES` (
+  `SERVICE_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `SERVICE_TYPE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `MAINTENANCE_COUNT` int(11) NOT NULL DEFAULT '0',
+  `DISPLAY_NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `GENERATION` bigint(20) NOT NULL,
+  PRIMARY KEY (`SERVICE_ID`),
+  UNIQUE KEY `NAME` (`NAME`),
+  UNIQUE KEY `IDX_UNIQUE_SERVICE` (`CLUSTER_ID`,`DISPLAY_NAME`),
+  KEY `FK_SERVICE_CLUSTER` (`CLUSTER_ID`),
+  CONSTRAINT `FK_SERVICE_CLUSTER` FOREIGN KEY (`CLUSTER_ID`) REFERENCES `CLUSTERS` (`CLUSTER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SERVICES_AUD`
+--
+
+DROP TABLE IF EXISTS `SERVICES_AUD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SERVICES_AUD` (
+  `SERVICE_ID` bigint(20) NOT NULL,
+  `REV` bigint(20) NOT NULL,
+  `REVTYPE` tinyint(4) DEFAULT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `SERVICE_TYPE` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `CLUSTER_ID` bigint(20) DEFAULT NULL,
+  `DISPLAY_NAME` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`SERVICE_ID`,`REV`),
+  KEY `FK_SERVICE_REVISION_START` (`REV`),
+  CONSTRAINT `FK_SERVICE_REVISION_START` FOREIGN KEY (`REV`) REFERENCES `REVISIONS` (`REVISION_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SNAPSHOT_POLICIES`
+--
+
+DROP TABLE IF EXISTS `SNAPSHOT_POLICIES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SNAPSHOT_POLICIES` (
+  `POLICY_ID` bigint(20) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL,
+  `POLICY_IDENTIFIER` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `DESCRIPTION` longtext COLLATE utf8_unicode_ci,
+  `SERVICE_ID` bigint(20) NOT NULL,
+  `SCHEDULE_ID` bigint(20) NOT NULL,
+  `HOURLY_SNAPSHOTS` bigint(20) NOT NULL,
+  `DAILY_SNAPSHOTS` bigint(20) NOT NULL,
+  `WEEKLY_SNAPSHOTS` bigint(20) NOT NULL,
+  `MONTHLY_SNAPSHOTS` bigint(20) NOT NULL,
+  `YEARLY_SNAPSHOTS` bigint(20) NOT NULL,
+  `MINUTE_OF_HOUR` tinyint(4) NOT NULL,
+  `HOUR_OF_DAY` tinyint(4) NOT NULL,
+  `DAY_OF_WEEK` tinyint(4) NOT NULL,
+  `DAY_OF_MONTH` tinyint(4) NOT NULL,
+  `MONTH_OF_YEAR` tinyint(4) NOT NULL,
+  `HOURS_LIST` longtext COLLATE utf8_unicode_ci,
+  `ENTITIES_TO_SNAPSHOT` longtext COLLATE utf8_unicode_ci,
+  `ALERT_ON_START` bit(1) NOT NULL,
+  `ALERT_ON_SUCCESS` bit(1) NOT NULL,
+  `ALERT_ON_FAIL` bit(1) NOT NULL,
+  `ALERT_ON_ABORT` bit(1) NOT NULL,
+  `PAUSED` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`POLICY_ID`),
+  UNIQUE KEY `POLICY_IDENTIFIER` (`POLICY_IDENTIFIER`),
+  UNIQUE KEY `SCHEDULE_ID` (`SCHEDULE_ID`),
+  UNIQUE KEY `IDX_UNIQUE_SP_NAME_SERVICE` (`NAME`,`SERVICE_ID`),
+  KEY `FK_SNAPSHOT_POLICY_SERVICE` (`SERVICE_ID`),
+  CONSTRAINT `FK_SNAPSHOT_POLICY_SCHEDULE` FOREIGN KEY (`SCHEDULE_ID`) REFERENCES `COMMAND_SCHEDULES` (`SPEC_ID`),
+  CONSTRAINT `FK_SNAPSHOT_POLICY_SERVICE` FOREIGN KEY (`SERVICE_ID`) REFERENCES `SERVICES` (`SERVICE_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `USERS`
+--
+
+DROP TABLE IF EXISTS `USERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `USERS` (
+  `USER_ID` bigint(20) NOT NULL,
+  `USER_NAME` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `PASSWORD_HASH` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `PASSWORD_SALT` bigint(20) NOT NULL,
+  `PASSWORD_LOGIN` tinyint(1) NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`USER_ID`),
+  UNIQUE KEY `unique_user_name` (`USER_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `USER_ROLES`
+--
+
+DROP TABLE IF EXISTS `USER_ROLES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `USER_ROLES` (
+  `USER_ROLE_ID` bigint(20) NOT NULL,
+  `USER_ID` bigint(20) NOT NULL,
+  `USER_ROLE` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`USER_ROLE_ID`),
+  KEY `FK_USER_ROLE` (`USER_ID`),
+  CONSTRAINT `FK_USER_ROLE` FOREIGN KEY (`USER_ID`) REFERENCES `USERS` (`USER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `USER_SETTINGS`
+--
+
+DROP TABLE IF EXISTS `USER_SETTINGS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `USER_SETTINGS` (
+  `USER_SETTING_ID` bigint(20) NOT NULL,
+  `USER_ID` bigint(20) NOT NULL,
+  `ATTR` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `VALUE` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `OPTIMISTIC_LOCK_VERSION` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`USER_SETTING_ID`),
+  UNIQUE KEY `USER_ID` (`USER_ID`,`ATTR`),
+  KEY `FK_USER_SETTING_USER` (`USER_ID`),
+  CONSTRAINT `FK_USER_SETTING_USER` FOREIGN KEY (`USER_ID`) REFERENCES `USERS` (`USER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2017-08-07  8:52:02
