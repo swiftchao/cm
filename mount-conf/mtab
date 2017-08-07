@@ -1,0 +1,10 @@
+/dev/mapper/vg_quickstart-lv_root / ext4 rw 0 0
+proc /proc proc rw 0 0
+sysfs /sys sysfs rw 0 0
+devpts /dev/pts devpts rw,gid=5,mode=620 0 0
+tmpfs /dev/shm tmpfs rw 0 0
+/dev/sda1 /boot ext4 rw 0 0
+none /proc/sys/fs/binfmt_misc binfmt_misc rw 0 0
+vmware-vmblock /tmp/vmblock-fuse fuse.vmware-vmblock rw,nosuid,nodev,default_permissions,allow_other 0 0
+.host:/ /mnt/hgfs vmhgfs rw,ttl=1 0 0
+cm_processes /var/run/cloudera-scm-agent/process tmpfs rw,mode=0751 0 0
